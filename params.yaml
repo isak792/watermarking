@@ -1,0 +1,3 @@
+data:
+  raw_filename: "emothaw_data.pkl"
+  processed_filename: "emothaw_data_Processed.pkl"
