@@ -6,24 +6,31 @@ from tqdm import tqdm
 
 from watermark.config import PROCESSED_DATA_DIR
 
-app = typer.Typer()
+import os
+import pandas as pd
 
 
-@app.command()
-def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    input_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
-    output_path: Path = PROCESSED_DATA_DIR / "features.csv",
-    # -----------------------------------------
-):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Generating features from dataset...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Features generation complete.")
-    # -----------------------------------------
+class DataFrameAnalyzer:
+    def __init__(self, df):
+        self.df = df  
+    
+    def print_info(self):
+        print("DataFrame Information:")
+        self.df.info()  
+    
+    def print_class_distribution(self, class_column):
+        if class_column in self.df.columns:
+            print("\nClass distribution:")
+            print(self.df[class_column].value_counts())  
+        else:
+            print(f"La columna '{class_column}' no existe en el DataFrame.")
+
+class DataStatistics:
+    def __init__(self, df):
+        self.df = df
+    
+    def print_summary_statistics(self):
+        print("\nSummary statistics:")
+        print(self.df.describe())
 
 
-if __name__ == "__main__":
-    app()
