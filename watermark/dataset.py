@@ -199,7 +199,6 @@ class MissingValueAnalyzer:
 
     def statistics_resume(self):
         print("Estadisticas")
-        
         return self.data.describe()
 
 

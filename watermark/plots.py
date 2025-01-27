@@ -4,9 +4,11 @@ import typer
 from loguru import logger
 from tqdm import tqdm
 
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import scipy.stats as stats
 
 from watermark.config import FIGURES_DIR, PROCESSED_DATA_DIR
 
@@ -120,6 +122,40 @@ class PlotHandler:
         
         if save:
             self.save_plot(filename)
+
+    def plot_boxplot2(self, num_plots=5):
+        """
+        Genera un boxplot para cada columna del DataFrame, hasta un máximo de `num_plots`.
+        
+        Parámetros:
+        - data: DataFrame que contiene los datos.
+        - num_plots: Número máximo de boxplots a generar (por defecto 5).
+        """
+        # Seleccionar las primeras columnas a graficar
+        columns_to_plot = self.data.columns[:num_plots]
+        
+        # Configuración del tamaño de la figura
+        plt.figure(figsize=(15, 5))
+        
+        # Generar un boxplot para cada columna seleccionada
+        for i, col in enumerate(columns_to_plot, 1):
+            plt.subplot(1, num_plots, i)  # Crear subgráficos en una fila
+            sns.boxplot(y=self.data[col])
+            plt.title(col)
+            plt.tight_layout()
+        
+        # Mostrar los gráficos
+        plt.show()
+
+    def diagnostic_plots(self, variable):
+        plt.figure(figsize=(15,6))
+        plt.subplot(1, 2, 1)
+        self.data[variable].hist(bins=30)
+        plt.title(f"Histogram of {variable}")
+        plt.subplot(1, 2, 2)
+        stats.probplot(self.data[variable], dist="norm", plot=plt)
+        plt.title(f"Q-Q plot of {variable}")
+        plt.show()
 
 class ClassPlotter:
     """
@@ -247,6 +283,7 @@ class BoxPlotGenerator:
         self.n_rows = (self.n_features - 1) // self.n_cols + 1
 
     def create_plots(self) -> None:
+        print("New PLots")
         """
         Genera una cuadrícula de boxplots para todos los features.
 
