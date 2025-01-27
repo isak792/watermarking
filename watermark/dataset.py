@@ -176,13 +176,10 @@ class MissingValueAnalyzer:
             >>> analyzer = MissingValueAnalyzer(df)
             >>> missing_cols = analyzer.get_missing_columns()
         """
-        missing_flag = False
         missing_values = self.data.isnull().sum()
         porcentage_list = missing_values/len(self.data)*100
         for columna, valor in porcentage_list.items():
             print(f"{columna}: {valor:.3f} %")
-            if valor != 0: missing_flag = True
-        return missing_flag
 
     
     def display_missing_columns(self) -> None:
