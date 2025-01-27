@@ -133,7 +133,6 @@ class ClassPlotter:
         column (str): Nombre de la columna a analizar.
         class_counts (pd.Series): Conteo de clases (inicialmente None).
     """
-
     def __init__(self, df: pd.DataFrame, column: str):
         """
         Inicializa el visualizador de clases.

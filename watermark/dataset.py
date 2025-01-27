@@ -175,9 +175,10 @@ class MissingValueAnalyzer:
             >>> analyzer = MissingValueAnalyzer(df)
             >>> missing_cols = analyzer.get_missing_columns()
         """
-        missing_values = self.data.isnull().sum()
-        columns_with_missing = missing_values[missing_values > 0]
-        return columns_with_missing
+        porcentage_list = self.data.isnull().sum()/len(self.data)*100
+        for columna, valor in porcentage_list.items():
+            print(f"{columna}: {valor:.3f} %")
+
     
     def display_missing_columns(self) -> None:
         """
@@ -196,7 +197,10 @@ class MissingValueAnalyzer:
             print("Columnas con valores faltantes:")
             print(columns_with_missing)
 
-    
+    def statistics_resume(self):
+        print("Estadisticas")
+        
+        return self.data.describe()
 
 
 if __name__ == "__main__":
