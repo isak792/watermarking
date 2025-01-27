@@ -1,13 +1,14 @@
 from pathlib import Path
 
-import typer
-from loguru import logger
-from tqdm import tqdm
 import numpy as np
 import pandas as pd
+import typer
 import yaml
+from loguru import logger
+from tqdm import tqdm
 
-from watermark.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, INTERIM_DATA_DIR
+from watermark.config import INTERIM_DATA_DIR, PROCESSED_DATA_DIR, RAW_DATA_DIR
+
 
 class DataHandler:
     """
@@ -175,9 +176,13 @@ class MissingValueAnalyzer:
             >>> analyzer = MissingValueAnalyzer(df)
             >>> missing_cols = analyzer.get_missing_columns()
         """
-        porcentage_list = self.data.isnull().sum()/len(self.data)*100
+        missing_flag = False
+        missing_values = self.data.isnull().sum()
+        porcentage_list = missing_values/len(self.data)*100
         for columna, valor in porcentage_list.items():
             print(f"{columna}: {valor:.3f} %")
+            if valor != 0: missing_flag = True
+        return missing_flag
 
     
     def display_missing_columns(self) -> None:
@@ -190,12 +195,12 @@ class MissingValueAnalyzer:
             >>> analyzer = MissingValueAnalyzer(df)
             >>> analyzer.display_missing_columns()
         """
-        columns_with_missing = self.get_missing_columns()
-        if columns_with_missing.empty:
+        missing_flag = self.get_missing_columns()
+        if missing_flag is False:
             print("No hay columnas con valores faltantes.")
         else:
             print("Columnas con valores faltantes:")
-            print(columns_with_missing)
+            # print(columns_with_missing)
 
     def statistics_resume(self):
         print("Estadisticas")
