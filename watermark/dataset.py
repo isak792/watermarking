@@ -142,6 +142,21 @@ class DataHandler:
 
         self.save_data(PROCESSED_DATA_DIR, output_filename)
         return self
+    def get_extended_data(self,list_data, strides, limit_len):
+        sequences_list = []
+        for j, task in enumerate(list_data): # Recorrer la lista que contiene los datos de las tareas
+            sequences = [] # Lista para guardar las secuencias extendidas de cada tarea
+            for data in task: # Recorrer las señales de cada tarea
+                if len(data) <= limit_len: # Si la señal es menor o igual a la longitud límite no se hace ningún ajuste
+                 sequences.append(data)
+                 continue
+                else: # Si la señal es mayor a la longitud límite se obtienen las secuencias extendidas
+                 i=0
+                 while limit_len + i*strides[j] <= len(data): # Mientras la longitud de la secuencia más el desplazamiento no sea mayor a la longitud de la señal
+                    sequences.append(data[i*strides[j]:limit_len+i*strides[j]]) # Se obtiene la secuencia extendida
+                    i+=1 # Se incrementa el contador hasta que el límite de la señal sea alcanzado
+            sequences_list.append(sequences) # Se guarda la lista de secuencias extendidas de la tarea
+        return sequences_list
 
 
 class MissingValueAnalyzer:
