@@ -33,4 +33,26 @@ class DataStatistics:
         print("\nSummary statistics:")
         print(self.df.describe())
 
+class Utilities:
+    def __init__(self):
+        pass
+
+    def convertir_timestamp_a_binario(self,timestamp: str) -> str:
+       """
+         Convierte un timestamp dado a una cadena binaria.
+    
+         Cada carácter del timestamp se convierte en su representación en 8 bits.
+    
+        :param timestamp: Cadena de texto con el timestamp, por ejemplo "2025-01-31 15:30:00"
+        :return: Cadena que representa el timestamp en formato binario
+       """
+       binary_string = ''.join(format(ord(char), '08b') for char in timestamp)
+       return binary_string
+    
+    # Función para obtener un vector a partir de los bits
+    def get_vector(self,bits):
+       vector = [int(bit) for bit in bits]
+       return vector
+    
+
 
