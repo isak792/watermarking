@@ -44,19 +44,23 @@ class Utilities:
         pass
 
     def convertir_timestamp_a_binario(self,timestamp: str) -> str:
-       """
-         Convierte un timestamp dado a una cadena binaria.
+        """
+        ESTATUS - Deprecrated
+        Convierte un timestamp dado a una cadena binaria.
+        
+        Cada carácter del timestamp se convierte en su representación en 8 bits.
+        
+            :param timestamp: Cadena de texto con el timestamp, por ejemplo "2025-01-31 15:30:00"
+            :return: Cadena que representa el timestamp en formato binario
+        """
+        binary_string = ''.join(format(ord(char), '08b') for char in timestamp)
+        return binary_string
     
-         Cada carácter del timestamp se convierte en su representación en 8 bits.
-    
-        :param timestamp: Cadena de texto con el timestamp, por ejemplo "2025-01-31 15:30:00"
-        :return: Cadena que representa el timestamp en formato binario
-       """
-       binary_string = ''.join(format(ord(char), '08b') for char in timestamp)
-       return binary_string
-    
-    # Función para obtener un vector a partir de los bits
     def get_vector(self,bits):
+        """ 
+        ESTATUS - Not Used.
+        Genera un vector a partir de una secuencia de bits
+        """
         vector = [int(bit) for bit in bits]
         return vector
     
@@ -102,14 +106,21 @@ class Utilities:
         return wavedecs_list
     
 
-    
     def sign2wavelet(self, firma, wavelet='haar', nivel=2):
         """
         Aplica la transformada wavelet discreta a una firma y extrae estadísticas de los coeficientes.
+
+        INPUTS
+        ---
+            :param firma: lista de señales de las cuales vamos a obtener las estadisticas.
+            :param wavelet: El algoritmo para obtener las estadisticas de la señal
+            :param nivel: Parametro de funcion auxiliar el nivel de la señal a revisar HH
+            :return: Regresa las caracteristicas de la señal de entrada en forma de una lista.
         """
-        coeffs = pywt.wavedec(firma, wavelet, level=nivel)
+        coeffs = pywt.wavedec(firma, wavelet, level=nivel) # Se requiere mas info del funcionamiento de wavedec
         estadisticas = []
 
+        # Definir por que usamos estas estadisticas.
         for coef in coeffs:
             estadisticas.extend([np.mean(coef), np.std(coef), 
                                 np.min(coef), np.max(coef),
@@ -119,21 +130,37 @@ class Utilities:
     
 
     def dates_generator(self, n):
+        """
+        Genera un número de N de fechas aleatorias.
+
+        INPUTS
+        ---
+            :param n: Número de Fechas a generar
+            :return: una lista de con las fechas generadas.
+        """
         dates = []
         for i in range(n):
+            # Diccionario de los dias por mes para evitar errores en la generacion
             days_per_month = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 
                     8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
             año = random.randint(1995, 2025)
             mes = random.randint(1, 12)
             dia = random.randint(1, days_per_month[mes])
-            hora = random.randint(0,23)
+            hora = random.randint(1,23)
             minuto = random.randint(0,59)
             seg = random.randint(0,59)
             dates.append(f"{año}/{mes:02d}/{dia:02d} {hora:02d}:{minuto:02d}:{seg:02d}")
         return dates
     
     def hashear_fecha(self,fecha):
-        """Convierte la fecha en un hash SHA-256 y lo transforma en un vector numérico"""
+        """
+        Convierte la fecha en un hash SHA-256 y lo transforma en un vector numérico
+        
+        INPUTS
+        ---
+            :param fecha: Fecha a la cual se le generará el mapa hash
+            :return: un vector de valores del mapa hash.
+        """
         hash_obj = hashlib.sha256(fecha.encode())
         hash_hex = hash_obj.hexdigest()
         hash_vector = np.array([int(hash_hex[i : i+2], 16) for i in range(0, len(hash_hex), 2)])
