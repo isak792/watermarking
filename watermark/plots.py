@@ -1,16 +1,16 @@
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy.stats as stats
+import seaborn as sns
 import typer
 from loguru import logger
 from tqdm import tqdm
 
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pandas as pd
-import scipy.stats as stats
-
 from watermark.config import FIGURES_DIR, PROCESSED_DATA_DIR
+
 
 class PlotHandler:
     """
@@ -27,14 +27,14 @@ class PlotHandler:
         >>> plotter.plot_hist('column_name', save=True)
     """
 
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self):
         """
         Inicializa el manejador de gráficos.
 
         Args:
             data (pd.DataFrame): DataFrame con los datos a visualizar.
         """
-        self.data = data
+        # self.data = data
 
     def save_plot(self, filename: str, show: bool = False) -> None:
         """
@@ -155,6 +155,20 @@ class PlotHandler:
         plt.subplot(1, 2, 2)
         stats.probplot(self.data[variable], dist="norm", plot=plt)
         plt.title(f"Q-Q plot of {variable}")
+        plt.show()
+
+    def plot_master(self, values, title=''):
+        """ Convierte un array de valores n a una matrix cuadrada """
+        lenght = len(values)
+        size = int(np.sqrt(lenght)) + 1
+
+        diff = size**2 - lenght
+        values_plus = np.concatenate([values, np.zeros(diff)])
+
+        matrix = values_plus.reshape(size, size)
+        plt.imshow(matrix, cmap='gray', interpolation='nearest')
+        plt.title(title)
+        plt.axis('off')
         plt.show()
 
 class ClassPlotter:

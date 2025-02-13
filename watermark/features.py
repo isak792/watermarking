@@ -1,19 +1,18 @@
+import hashlib
+import math
+import os
+import random
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+import pywt
 import typer
 from loguru import logger
+from scipy.stats import kurtosis, skew
 from tqdm import tqdm
 
 from watermark.config import PROCESSED_DATA_DIR
-
-import os
-import pandas as pd
-from scipy.stats import skew, kurtosis
-import pywt
-import numpy as np
-import math
-import hashlib
-import random
 
 
 class DataFrameAnalyzer:
@@ -42,6 +41,42 @@ class DataStatistics:
 class Utilities:
     def __init__(self):
         pass
+
+    def string2bit(self, text: str):
+        """ Genera un array de bits de una cadena de caracteres """
+        binary_string = ''.join(format(ord(char), '08b') for char in text)
+        output = [int(char) for char in binary_string]
+        return output
+
+    def bit2string(self, arr):
+        """ Toma un arr de bits y lo tranforma a un string """
+        # Binary data
+        bin_data = ""
+        for bit in arr:
+            bin_data += str(bit)
+        
+        # Split the binary string into chunks of 8 bits (1 byte)
+        char = [bin_data[i:i+8] for i in range(0, len(bin_data), 8)]
+
+        # Convert binary to string
+        string = ''.join(chr(int(i, 2)) for i in char)
+
+        return string
+
+
+    def array_xor(self, arr1, arr2):
+        """ Implementa un XOR elemento a elemento para 2 arrays del mismo tamaño """
+        # Revisar que ambos arreglos sean del mismo tamanio
+        if len(arr1) != len(arr2):
+            return None
+        
+        output = []
+        for i in range(len(arr1)):
+            # Tenemos que castear los valores a booleano, para hacer XOR
+            # posterior a esto el resultado lo castemos a int para mayor sencilles.
+            output.append(int(bool(arr1[i]) ^ bool(arr2[i])))
+
+        return output
 
     def convertir_timestamp_a_binario(self,timestamp: str) -> str:
         """
