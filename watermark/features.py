@@ -15,6 +15,9 @@ import math
 import hashlib
 import random
 
+from PIL import Image
+import json
+
 
 class DataFrameAnalyzer:
     def __init__(self, df):
@@ -165,3 +168,90 @@ class Utilities:
         hash_hex = hash_obj.hexdigest()
         hash_vector = np.array([int(hash_hex[i : i+2], 16) for i in range(0, len(hash_hex), 2)])
         return hash_vector
+    
+    #Aplicar Logistic Chaotic Map para cifrar la imagen
+    def logistic_map_encrypt(self,image_matrix, r=3.99, x0=0.5):
+        """Cifra una imagen con Logistic Chaotic Map"""
+        h, w = image_matrix.shape
+        chaos_seq = np.zeros(h * w)
+        x = x0
+
+        for i in range(h * w):
+           x = r * x * (1 - x)  # Logistic map equation
+           chaos_seq[i] = x
+
+        # Convertir la secuencia caótica en índices de permutación
+        chaos_idx = np.argsort(chaos_seq)
+
+        # Aplanar la imagen y aplicar la permutación
+        img_flat = image_matrix.flatten()
+        encrypted_flat = img_flat[chaos_idx]
+
+        # Restaurar la forma de la imagen
+        encrypted_image = encrypted_flat.reshape(h, w)
+        return np.uint8(encrypted_image), chaos_idx  # Retornamos también el índice de permutación
+    
+    
+    def text_to_binary_v2(self,text):#
+        """Convierte un texto en su representación binaria de 8 bits por carácter"""
+        bin_text = ''.join(format(ord(c), '08b') for c in text)
+        return bin_text
+
+    def generate_image_from_text_v2(self,text):
+        """Convierte un texto en una imagen binaria de 32x32"""
+        bin_text = self.text_to_binary_v2(text)
+        faltantes = 1024 - len(bin_text)
+        if faltantes > 0:
+           bin_text += ''.join(str(b) for b in np.random.randint(0, 2, faltantes))
+        bit_array = np.array([int(b) for b in bin_text[:1024]]).reshape(32, 32) * 255
+        return Image.fromarray(np.uint8(bit_array), mode="L"), bit_array
+    
+class Encription_images:
+    def __init__(self):
+        pass
+
+    def generate_encrypted_date_images(self,n, save_path="generated_data.json"):
+        """Genera N imágenes cifradas de fechas aleatorias y guarda los datos en un archivo JSON."""
+        utils = Utilities()
+        dates = utils.dates_generator(n)
+        images = []
+        stored_chaos_indices = {}
+        stored_dates = {}
+
+        for idx, date in enumerate(dates):
+           img, bit_array = utils.generate_image_from_text_v2(date)
+           encrypted_img, chaos_idx = utils.logistic_map_encrypt(bit_array)
+
+           stored_chaos_indices[idx] = chaos_idx.tolist()  # Guardar índices de permutación
+           stored_dates[idx] = date  # Guardar fecha original
+
+           images.append((idx, date, img, encrypted_img))  # Guardar imagen cifrada
+    
+        # Guardar los datos en un archivo JSON
+        data_to_save = {
+          "dates": stored_dates,
+          "chaos_indices": stored_chaos_indices
+        }
+        with open(save_path, "w") as f:
+             json.dump(data_to_save, f, indent=4)
+
+        return images, stored_chaos_indices
+    
+    def logistic_map_decrypt(self,encrypted_matrix, chaos_idx):
+        """Descifra una imagen usando Logistic Chaotic Map (permuta inversa)"""
+        h, w = encrypted_matrix.shape
+        decrypted_flat = np.zeros(h * w, dtype=np.uint8)
+
+        # Asegúrate de que chaos_idx sea un array de enteros y tenga la longitud correcta
+        chaos_idx = np.array(chaos_idx, dtype=int)
+
+        # Asegúrate de que los índices estén dentro del rango
+        if chaos_idx.max() >= h * w:
+            raise ValueError("Los índices de permutación están fuera del rango permitido")
+
+        # Aplicar la permutación inversa
+        decrypted_flat[chaos_idx] = encrypted_matrix.flatten()
+
+        # Restaurar la forma original de la imagen
+        decrypted_image = decrypted_flat.reshape(h, w)
+        return decrypted_image
