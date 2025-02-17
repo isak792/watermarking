@@ -3,9 +3,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import typer
+import cv2
 import yaml
 from loguru import logger
 from tqdm import tqdm
+
+from torchvision import transforms
 
 from watermark.config import INTERIM_DATA_DIR, PROCESSED_DATA_DIR, RAW_DATA_DIR
 
@@ -158,7 +161,46 @@ class DataHandler:
                     i+=1 # Se incrementa el contador hasta que el límite de la señal sea alcanzado
             sequences_list.append(sequences) # Se guarda la lista de secuencias extendidas de la tarea
         return sequences_list
+    
+    # Función para convertir un trazo en imagen
+    def trazo_a_imagen_v2(self,x_trazo, y_trazo, image_size=224):
+       # Crear una imagen en blanco
+       img = np.zeros((image_size, image_size), dtype=np.uint8)
 
+       # Normalizar las coordenadas para que encajen dentro de la imagen
+       x_min, x_max = np.min(x_trazo), np.max(x_trazo)
+       y_min, y_max = np.min(y_trazo), np.max(y_trazo)
+
+       # Redimensionar coordenadas a un rango de 0 a 223 (para 224x224 píxeles)
+       x_scaled = np.clip(((x_trazo - x_min) / (x_max - x_min)) * (image_size - 1), 0, image_size - 1)
+       y_scaled = np.clip(((y_trazo - y_min) / (y_max - y_min)) * (image_size - 1), 0, image_size - 1)
+
+       # Dibujar el trazo en la imagen
+       for i in range(1, len(x_scaled)):
+            cv2.line(img, (int(x_scaled[i - 1]), int(y_scaled[i - 1])), 
+                  (int(x_scaled[i]), int(y_scaled[i])), 255, 1)
+
+       return img
+    
+    # Función para preprocesar una imagen y convertirla a tensor
+    def preprocesar_imagen_tensor(self,img): 
+      # Asegúrate de que la imagen tiene 3 canales (RGB)
+       img_rgb = np.stack([img] * 3, axis=-1)  # Replicar el canal para crear una imagen RGB
+
+        # Realizar las transformaciones necesarias para ResNet101
+       transform = transforms.Compose([
+          transforms.ToPILImage(),  # Convertir la imagen de NumPy a PIL
+          transforms.Resize((224, 224)),  # Redimensionar a 224x224
+          transforms.ToTensor(),  # Convertir la imagen a tensor
+          transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalización de ResNet
+       ])
+
+        # Convertir la imagen a tensor y preprocesar
+       img_tensor = transform(img_rgb)
+       img_tensor = img_tensor.unsqueeze(0)  # Añadir la dimensión del batch: [1, 3, 224, 224]
+    
+       return img_tensor
+    
 
 class MissingValueAnalyzer:
     """
