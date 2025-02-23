@@ -183,24 +183,42 @@ class DataHandler:
        return img
     
     # Función para preprocesar una imagen y convertirla a tensor
-    def preprocesar_imagen_tensor(self,img): 
-      # Asegúrate de que la imagen tiene 3 canales (RGB)
-       img_rgb = np.stack([img] * 3, axis=-1)  # Replicar el canal para crear una imagen RGB
+    def preprocesar_imagen_tensor(self, img):
+        # Si la imagen es un objeto PIL, convertirla a numpy array
+        if not isinstance(img, np.ndarray):
+            img = np.array(img)
+        
+        # Verificar la dimensionalidad de la imagen
+        if img.ndim == 2:
+            # La imagen es en escala de grises (2D), replicar el canal para obtener RGB
+            img_rgb = np.stack([img] * 3, axis=-1)
+        elif img.ndim == 3:
+            if img.shape[2] == 1:
+                # Imagen con 1 canal, replicarlo para RGB
+                img_rgb = np.concatenate([img, img, img], axis=-1)
+            elif img.shape[2] == 3:
+                # La imagen ya es RGB, no se modifica
+                img_rgb = img
+            else:
+                raise ValueError(f"La imagen tiene {img.shape[2]} canales, se esperaba 1 o 3.")
+        else:
+            raise ValueError("Formato de imagen inesperado. Se esperaba una imagen 2D o 3D.")
 
-        # Realizar las transformaciones necesarias para ResNet101
-       transform = transforms.Compose([
-          transforms.ToPILImage(),  # Convertir la imagen de NumPy a PIL
-          transforms.Resize((224, 224)),  # Redimensionar a 224x224
-          transforms.ToTensor(),  # Convertir la imagen a tensor
-          transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalización de ResNet
-       ])
+        # Transformaciones necesarias para ResNet101
+        transform = transforms.Compose([
+            transforms.ToPILImage(),       # Convertir la imagen de NumPy a PIL
+            transforms.Resize((224, 224)),   # Redimensionar a 224x224
+            transforms.ToTensor(),           # Convertir a tensor
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225])  # Normalización
+        ])
 
-        # Convertir la imagen a tensor y preprocesar
-       img_tensor = transform(img_rgb)
-       img_tensor = img_tensor.unsqueeze(0)  # Añadir la dimensión del batch: [1, 3, 224, 224]
-    
-       return img_tensor
-    
+        # Aplicar las transformaciones
+        img_tensor = transform(img_rgb)
+        img_tensor = img_tensor.unsqueeze(0)  # Añadir la dimensión del batch: [1, 3, 224, 224]
+
+        return img_tensor
+        
 
 class MissingValueAnalyzer:
     """
