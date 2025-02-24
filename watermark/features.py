@@ -234,9 +234,12 @@ class Utilities:
     def generate_image_from_text_v2(self,text):
         """Convierte un texto en una imagen binaria de 32x32"""
         bin_text = self.text_to_binary_v2(text)
+        print(len(bin_text))
+        # 2. Asegurar que tenemos 1024 bits (32x32)
         faltantes = 1024 - len(bin_text)
         if faltantes > 0:
-           bin_text += ''.join(str(b) for b in np.random.randint(0, 2, faltantes))
+            relleno = '0' * faltantes
+            bin_text += ''.join(relleno)  # Rellenar con 0
         bit_array = np.array([int(b) for b in bin_text[:1024]]).reshape(32, 32) * 255
         return Image.fromarray(np.uint8(bit_array), mode="L"), bit_array
     
